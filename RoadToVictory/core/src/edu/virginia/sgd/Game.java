@@ -1,5 +1,7 @@
 package edu.virginia.sgd;
 
+import java.util.ArrayList;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -12,9 +14,10 @@ public class Game extends ApplicationAdapter {
 	Texture img;
 	Grid grid;
 	long lastTime;
-	
+	ArrayList<GameObject> gameobjlist = new ArrayList<GameObject>();
+
 	@Override
-	public void create () {
+	public void create() {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 		lastTime = TimeUtils.millis();
@@ -24,12 +27,12 @@ public class Game extends ApplicationAdapter {
 	}
 
 	@Override
-	public void render () {
-		
+	public void render() {
+
 		long currentTime = TimeUtils.millis();
 		update(currentTime - lastTime);
 		lastTime = currentTime;
-		
+
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
@@ -38,9 +41,12 @@ public class Game extends ApplicationAdapter {
 		//Render Grid
 		grid.render(0, 0, batch);
 		batch.end();
+		for (GameObject a : gameobjlist)
+			a.render(batch);
 	}
-	
+
 	private void update(long timePassed) {
-		
+		for (GameObject a : gameobjlist)
+			a.update(timePassed);
 	}
 }
