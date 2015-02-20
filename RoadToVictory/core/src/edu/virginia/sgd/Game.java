@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.TimeUtils;
 public class Game extends ApplicationAdapter {
 	SpriteBatch batch;
 	Texture img;
+	Grid grid;
 	long lastTime;
 	
 	@Override
@@ -17,6 +18,9 @@ public class Game extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
 		lastTime = TimeUtils.millis();
+		
+		// Initialize Grid
+		grid = new Grid(200, 200, img);
 	}
 
 	@Override
@@ -28,8 +32,11 @@ public class Game extends ApplicationAdapter {
 		
 		Gdx.gl.glClearColor(1, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
 		batch.begin();
-		batch.draw(img, 0, 0);
+		
+		//Render Grid
+		grid.render(0, 0, batch);
 		batch.end();
 	}
 	
