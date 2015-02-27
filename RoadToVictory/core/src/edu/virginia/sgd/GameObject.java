@@ -6,14 +6,17 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public abstract class GameObject {
 	protected Point pos;
-
-	public GameObject(int x, int y) {
-		pos = new Point(x, y);
+	protected int team;
+	
+	public GameObject(int x, int y, int team) {
+		this.pos = new Point(x, y);
+		this.team = team;
 	}
 
-	public GameObject(Point p) {
+	public GameObject(Point p, int team) {
 		// Copy the point rather than the reference
-		pos = new Point(p);
+		this.pos = new Point(p);
+		this.team = team;
 	}
 
 	public abstract void update(float timePassed);
@@ -22,6 +25,10 @@ public abstract class GameObject {
 
 	public Point getPos() {
 		return pos;
+	}
+	
+	public int getTeam() {
+		return team;
 	}
 
 	public void setPos(Point pos) {
