@@ -16,21 +16,13 @@ public class Obstruction extends GameObject{
 	boolean destroyable; //if the obstruction can be destroyed (like a wall)
 	
 	public Obstruction(int x, int y, int xRange, int yRange, boolean destroyable){
-		super(x, y);
+		super(x, y, 0);
 		(this).xRange = xRange;
 		(this).yRange = yRange;
 		(this).destroyable = destroyable;
 		
 	}
-//	public Obstruction(int x, int y, int xLowerBound, int yLowerBound, int xUpperBound, int yUpperBound, boolean destroyable){
-//		super(x, y);
-//		(this).xLowerBound = xLowerBound;
-//		(this).yLowerBound = yLowerBound;
-//		(this).xUpperBound = xUpperBound;
-//		(this).yUpperBound = yUpperBound;
-//		(this).destroyable = destroyable;
-//		
-//	}
+
 
 	@Override
 	public void update(float timePassed) {
