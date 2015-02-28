@@ -15,6 +15,7 @@ public class Game extends ApplicationAdapter {
 	Grid grid;
 	long lastTime;
 	ArrayList<GameObject> gameobjlist = new ArrayList<GameObject>();
+	Player p1;
 
 	@Override
 	public void create() {
@@ -24,29 +25,34 @@ public class Game extends ApplicationAdapter {
 		
 		// Initialize Grid
 		grid = new Grid(200, 200, img);
+		
+		//Initialize players
+		p1 = new HumanPlayer(gameobjlist, grid, 1);
 	}
 
 	@Override
 	public void render() {
 
 		long currentTime = TimeUtils.millis();
-		update(currentTime - lastTime);
+		update((currentTime - lastTime) / 1000.f);
 		lastTime = currentTime;
 
-		Gdx.gl.glClearColor(1, 0, 0, 1);
+		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
 		batch.begin();
 		
 		//Render Grid
-		grid.render(0, 0, batch);
-		batch.end();
+		grid.render(batch);
 		for (GameObject a : gameobjlist)
 			a.render(batch);
+		
+		batch.end();
 	}
 
-	private void update(long timePassed) {
+	private void update(float timePassed) {
 		for (GameObject a : gameobjlist)
 			a.update(timePassed);
+		p1.update(timePassed);
 	}
 }
