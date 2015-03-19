@@ -24,7 +24,7 @@ public class Game extends ApplicationAdapter {
 		lastTime = TimeUtils.millis();
 		
 		// Initialize Grid
-		grid = new Grid(200, 200, img);
+		grid = new Grid(20, 20, img);
 		
 		//Initialize players
 		p1 = new HumanPlayer(gameobjlist, grid, 1);
@@ -54,5 +54,6 @@ public class Game extends ApplicationAdapter {
 		for (GameObject a : gameobjlist)
 			a.update(timePassed);
 		p1.update(timePassed);
+		grid.update(timePassed);
 	}
 }

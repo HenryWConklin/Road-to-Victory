@@ -8,7 +8,7 @@ import com.badlogic.gdx.Input.Buttons;
 
 public class HumanPlayer extends Player {
 	
-	private static final int SCROLL_SPEED = 200;
+	private static final int SCROLL_SPEED = 1000;
 	private static final int EDGE_WIDTH = 50;
 	
 	// Last location that a mouse button was pressed
@@ -41,7 +41,15 @@ public class HumanPlayer extends Player {
 			grid.translateOffset(0, (int)(SCROLL_SPEED * timePassed));
 		}
 		
+		//// Mouse button down
+		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
+			grid.build(grid.screenToGridCoords(mousePos));
+		}
+		else if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+			grid.destroy(grid.screenToGridCoords(mousePos));
+		}
 		
+		//// Setup for mouse drags
 		if (buttonPressed == 0) {
 			if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
 				mouseDownPos = mousePos;
@@ -52,6 +60,7 @@ public class HumanPlayer extends Player {
 				buttonPressed = 2;
 			}
 		}
+		//// Mouse released
 		else {
 			if (buttonPressed == 1 && !Gdx.input.isButtonPressed(Buttons.LEFT)) {
 				// TODO Left click released 
