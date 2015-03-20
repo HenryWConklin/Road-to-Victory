@@ -17,6 +17,7 @@ public class Game extends ApplicationAdapter {
 	ArrayList<GameObject> gameobjlist = new ArrayList<GameObject>();
 	Player p1;
 
+
 	@Override
 	public void create() {
 		batch = new SpriteBatch();

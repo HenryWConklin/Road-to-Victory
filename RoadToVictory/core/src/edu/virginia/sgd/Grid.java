@@ -86,6 +86,7 @@ public class Grid {
 		}
 		else if (offset.y < -board[0].length * TILE_DIMENSION + Gdx.graphics.getHeight()) {
 			offset.y = -board[0].length * TILE_DIMENSION+ Gdx.graphics.getHeight();
+			
 		}
 	}
 	
@@ -197,7 +198,10 @@ public class Grid {
 			return false;
 		
 		board[x][y] = 0;
-		fixTile(x,y);
+		fixTile(x-1,y,false);
+		fixTile(x+1,y,false);
+		fixTile(x,y-1,false);
+		fixTile(x,y+1,false);
 		return true;
 	}
 }
