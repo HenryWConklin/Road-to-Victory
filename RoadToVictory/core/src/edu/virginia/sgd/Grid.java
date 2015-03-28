@@ -2,7 +2,6 @@ package edu.virginia.sgd;
 
 import java.awt.Point;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -12,14 +11,12 @@ public class Grid {
 	private int[][] board;
 	//Maps ID to texture
 	private TileSet tiles;
-	private Point offset;
 	
 	public Grid(int xdim, int ydim, Texture tex){
 		if (xdim == 0 || ydim == 0)
 			throw new IllegalArgumentException("Grid size cannot be 0.");
 		this.board = new int[xdim][ydim];
 		this.tiles = new TileSet("tileset.png", TILE_DIMENSION, TILE_DIMENSION);
-		this.offset = new Point();
 	}
 	
 	public void update(float timePassed){
@@ -52,48 +49,28 @@ public class Grid {
 		// Assumes sp.begin() has already been called
 		for (int i = 0; i < this.board.length; i++){
 			for (int j = 0; j < this.board[i].length; j++){
-				int xpos = TILE_DIMENSION * i + this.offset.x;
-				int ypos = TILE_DIMENSION * j + this.offset.y;
+				int xpos = TILE_DIMENSION * i;
+				int ypos = TILE_DIMENSION * j;
 				sb.draw(this.tiles.getTexture(board[i][j]), xpos, ypos, TILE_DIMENSION, TILE_DIMENSION);
 			}
 		}
 	}
 	
-	public Point getOffset() {
-		return offset;
+	// Returns width in world coordinates
+	public int getWidth() {
+			return board.length * TILE_DIMENSION;
 	}
 	
-	public void setOffset(int x, int y) {
-		offset.setLocation(x, y);
-		clipOffset();
+	// Returns height in world coordinates
+	public int getHeight() {
+		return board[0].length * TILE_DIMENSION;
 	}
 	
-	public void translateOffset(int dx, int dy) {
-		offset.translate(dx, dy);
-		clipOffset();
-	}
 	
-	private void clipOffset() {
-		if (offset.x > 0) {
-			offset.x = 0;
-		}
-		else if (offset.x < -board.length * TILE_DIMENSION+ Gdx.graphics.getWidth()) {
-			offset.x = -board.length * TILE_DIMENSION+ Gdx.graphics.getWidth();
-		}
+	public Point worldToGridCoords(Point screen) {
 		
-		if (offset.y > 0) {
-			offset.y = 0;
-		}
-		else if (offset.y < -board[0].length * TILE_DIMENSION + Gdx.graphics.getHeight()) {
-			offset.y = -board[0].length * TILE_DIMENSION+ Gdx.graphics.getHeight();
-			
-		}
-	}
-	
-	public Point screenToGridCoords(Point screen) {
-		screen.y = Gdx.graphics.getHeight() - screen.y;
-		int gridX = (screen.x - this.offset.x) / TILE_DIMENSION;
-		int gridY = (screen.y - this.offset.y) / TILE_DIMENSION;
+		int gridX = (screen.x) / TILE_DIMENSION;
+		int gridY = (screen.y) / TILE_DIMENSION;
 		
 		return new Point(gridX,gridY);
 	}

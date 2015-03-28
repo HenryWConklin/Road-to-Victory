@@ -15,7 +15,7 @@ public class Game extends ApplicationAdapter {
 	Grid grid;
 	long lastTime;
 	ArrayList<GameObject> gameobjlist = new ArrayList<GameObject>();
-	Player p1;
+	HumanPlayer p1;
 
 
 	@Override
@@ -40,6 +40,11 @@ public class Game extends ApplicationAdapter {
 
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
+		p1.getCamera().update();
+		
+		batch.setTransformMatrix(p1.getCamera().view);
+		batch.setProjectionMatrix(p1.getCamera().projection);
 		
 		batch.begin();
 		
