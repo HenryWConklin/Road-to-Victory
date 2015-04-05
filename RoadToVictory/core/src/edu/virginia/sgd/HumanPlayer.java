@@ -1,9 +1,11 @@
 package edu.virginia.sgd;
 
 import java.awt.Point;
+import java.util.HashSet;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -14,25 +16,36 @@ public class HumanPlayer extends Player {
 	private static final int SCROLL_SPEED = 1000;
 	private static final int EDGE_WIDTH = 50;
 	
+	private static final int STATE_SELECT = 0;
+	private static final int STATE_BUILD = 1;
+	
+	// Control state
+	private int state;
+	
 	// Last location that a mouse button was pressed
 	private Point mouseDownPos;
 	
 	// Current mouse button that is down (0=none, 1=left, 2=right)
 	private int buttonPressed;
 	
+	private HashSet<Unit> selection;
+	
 	private OrthographicCamera camera;
 
-	public HumanPlayer(List<GameObject> gameObjs, Grid grid, int team) {
-		super(gameObjs, grid, team);
+	public HumanPlayer(Grid grid, int team) {
+		super(grid, team);
 		camera = new OrthographicCamera();
 		camera.setToOrtho(false);
 		camera.position.x = 0;
 		camera.position.y = 0;
+		state = STATE_SELECT;
+		selection = new HashSet<Unit>();
 	}
 
 	@Override
 	public void update(float timePassed) {
 		// Mouse screen coordinates
+
 		Point mousePos = new Point(Gdx.input.getX(), Gdx.input.getY());
 		
 		// Mouse world coordinates
@@ -71,35 +84,116 @@ public class HumanPlayer extends Player {
 		}
 		
 		//// Mouse button down
-		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
-			grid.build(grid.worldToGridCoords(mouseWorld));
+//		if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
+//			grid.build(grid.worldToGridCoords(mouseWorld));
+//		}
+//		else if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
+//			grid.destroy(grid.worldToGridCoords(mouseWorld));
+//		}
+		
+		if (Gdx.input.isKeyPressed(Input.Keys.B)) {
+			state = STATE_BUILD;
 		}
-		else if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
-			grid.destroy(grid.worldToGridCoords(mouseWorld));
+		if (Gdx.input.isKeyPressed(Input.Keys.ESCAPE)) {
+			state = STATE_SELECT;
 		}
 		
-		//// Setup for mouse drags
+		//// Setup for mouse drags / on mouse down
 		if (buttonPressed == 0) {
 			if(Gdx.input.isButtonPressed(Buttons.LEFT)) {
 				mouseDownPos = mouseWorld;
 				buttonPressed = 1;
+				
+				if (state == STATE_BUILD) {
+					grid.build(grid.worldToGridCoords(mouseWorld));
+					if (!(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT))) {
+						state = STATE_SELECT;
+					}
+					// Stop a drag event
+					buttonPressed = 0;
+				}
 			}
 			else if (Gdx.input.isButtonPressed(Buttons.RIGHT)) {
 				mouseDownPos = mouseWorld;
 				buttonPressed = 2;
+				
+				if (state == STATE_SELECT) {
+					moveSelection(grid.worldToGridCoords(mouseWorld));
+				}
+				else if (state == STATE_BUILD) {
+					grid.destroy(grid.worldToGridCoords(mouseWorld));
+					if (!(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT))) {
+						state = STATE_SELECT;
+					}
+					buttonPressed = 0;
+				}
+				
 			}
 		}
 		//// Mouse released
 		else {
 			if (buttonPressed == 1 && !Gdx.input.isButtonPressed(Buttons.LEFT)) {
-				// TODO Left click released 
+				
+				buttonPressed = 0;
+				if (state == STATE_SELECT) {
+					// Select units in box
+					Point gridDown = grid.worldToGridCoords(mouseDownPos);
+					Point gridUp = grid.worldToGridCoords(mouseWorld);
+					
+					int minX,minY, maxX,maxY;
+					
+					if (gridDown.x < gridUp.x) {
+						minX = gridDown.x;
+						maxX = gridUp.x;
+					}
+					else {
+						minX = gridUp.x;
+						maxX = gridDown.x;
+					}
+					if (gridDown.y < gridUp.y) {
+						minY = gridDown.y;
+						maxY = gridUp.y;
+					}
+					else {
+						minY = gridUp.y;
+						maxY = gridDown.y;
+					}
+					
+					// If not holding shift, clear selection before refilling
+					if (!(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT))) {
+						selection.clear();
+					}
+											
+					Unit[][] units = grid.getUnits();
+					for (int x = minX; x <= maxX; x++) {
+						for (int y = minY; y <= maxY; y++) {
+							if (units[x][y] != null && units[x][y].getTeam() == this.team) {
+								selection.add(units[x][y]);
+							}
+						}
+					}
+				}
+				
 			}
 			else if (buttonPressed == 2 && !Gdx.input.isButtonPressed(Buttons.RIGHT)){
-				// TODO Right click released
+				buttonPressed = 0;
 			}
 		}
 	}
 	
+	private void moveSelection(Point p) {
+		boolean queue = Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
+		for (Unit u : selection) {
+			if (queue) {
+				u.queueMove(p);
+			}
+			else {
+				u.move(p);
+			}
+		}
+		
+	}
+
 	public Camera getCamera() {
 		return camera;
 	}

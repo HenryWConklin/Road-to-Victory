@@ -1,7 +1,5 @@
 package edu.virginia.sgd;
 
-import java.util.ArrayList;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -14,7 +12,6 @@ public class Game extends ApplicationAdapter {
 	Texture img;
 	Grid grid;
 	long lastTime;
-	ArrayList<GameObject> gameobjlist = new ArrayList<GameObject>();
 	HumanPlayer p1;
 
 
@@ -28,7 +25,7 @@ public class Game extends ApplicationAdapter {
 		grid = new Grid(20, 20, img);
 		
 		//Initialize players
-		p1 = new HumanPlayer(gameobjlist, grid, 1);
+		p1 = new HumanPlayer(grid, 1);
 	}
 
 	@Override
@@ -50,15 +47,11 @@ public class Game extends ApplicationAdapter {
 		
 		//Render Grid
 		grid.render(batch);
-		for (GameObject a : gameobjlist)
-			a.render(batch);
 		
 		batch.end();
 	}
 
 	private void update(float timePassed) {
-		for (GameObject a : gameobjlist)
-			a.update(timePassed);
 		p1.update(timePassed);
 		grid.update(timePassed);
 	}

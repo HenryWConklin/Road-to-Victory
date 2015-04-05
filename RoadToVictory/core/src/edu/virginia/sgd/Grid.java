@@ -7,19 +7,25 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Grid {
 	public static final int TILE_DIMENSION = 150;
+	public static final float SPAWN_TIME = 1f;
 	
 	private int[][] board;
+	private Unit[][] units;
 	//Maps ID to texture
 	private TileSet tiles;
+	
+	private float spawnTimer;
 	
 	public Grid(int xdim, int ydim, Texture tex){
 		if (xdim == 0 || ydim == 0)
 			throw new IllegalArgumentException("Grid size cannot be 0.");
 		this.board = new int[xdim][ydim];
 		this.tiles = new TileSet("tileset.png", TILE_DIMENSION, TILE_DIMENSION);
+		units = new Unit[xdim][ydim];
 	}
 	
 	public void update(float timePassed){
+		spawnTimer -= timePassed;
 		for (int r = 0; r < board.length; r++) {
 			for (int c = 0; c < board[r].length; c++) {
 				if (getTile(r,c) == 0 || getTile(r,c) >= 12) {
@@ -36,12 +42,26 @@ public class Grid {
 					
 					if (closeRoads >= 2) {
 						board[r][c] = 12;
+						
 					}
 					else {
 						board[r][c] = 0;
 					}
 				}
+				if (getTile(r,c) == 12 && spawnTimer <= 0) {
+					if (units[r][c] == null) {
+						units[r][c] = new Unit(r, c, 1, this);
+					}
+				}
+				
+				// Update units
+				if (units[r][c] != null) {
+					units[r][c].update(timePassed);
+				}
 			}
+		}
+		if (spawnTimer <= 0) {
+			spawnTimer = SPAWN_TIME;
 		}
 	}
 	
@@ -52,6 +72,13 @@ public class Grid {
 				int xpos = TILE_DIMENSION * i;
 				int ypos = TILE_DIMENSION * j;
 				sb.draw(this.tiles.getTexture(board[i][j]), xpos, ypos, TILE_DIMENSION, TILE_DIMENSION);
+			}
+		}
+		for (int i = 0; i < this.units.length; i++){
+			for (int j = 0; j < this.units[i].length; j++){
+				if (units[i][j] != null) {
+					units[i][j].render(sb);
+				}
 			}
 		}
 	}
@@ -166,6 +193,12 @@ public class Grid {
 			return board[x][y];
 	}
 	
+	public boolean isRoad(int x, int y) {
+		int tile = getTile(x,y);
+		
+		return tile > 0 && tile < 12;
+	}
+	
 	public boolean destroy(Point p) {
 		return destroy(p.x,p.y);
 	}
@@ -180,5 +213,13 @@ public class Grid {
 		fixTile(x,y-1,false);
 		fixTile(x,y+1,false);
 		return true;
+	}
+	
+	public Graph getRoadGraph() {
+		return roadGraph;
+	}
+	
+	public Unit[][] getUnits() {
+		return units;
 	}
 }
