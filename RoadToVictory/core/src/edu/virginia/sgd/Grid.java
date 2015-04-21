@@ -7,10 +7,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Grid {
 	public static final int TILE_DIMENSION = 150;
-	public static final float SPAWN_TIME = 1f;
+	public static final float SPAWN_TIME = 5f;
 	
 	private int[][] board;
 	private Unit[][] units;
+	private int[][] team;
 	//Maps ID to texture
 	private TileSet tiles;
 	
@@ -22,47 +23,112 @@ public class Grid {
 		this.board = new int[xdim][ydim];
 		this.tiles = new TileSet("tileset.png", TILE_DIMENSION, TILE_DIMENSION);
 		units = new Unit[xdim][ydim];
+		team = new int[xdim][ydim];
+		spawnTimer = SPAWN_TIME;
+		
+		for (int r = 0; r < 5; r++) {
+			for (int c = 0; c < 5; c++) {
+				team[r][c]=1;
+			}
+		}
+		for (int r = 5; r < 10; r++) {
+			for (int c = 0; c < 5; c++) {
+				team[r][c]=2;
+			}
+		}
+		for (int r = 10; r < 15; r++) {
+			for (int c = 0; c < 5; c++) {
+				team[r][c]=4;
+			}
+		}
 	}
 	
-	public void update(float timePassed){
-		spawnTimer -= timePassed;
+	private void buildHouses() {
 		for (int r = 0; r < board.length; r++) {
 			for (int c = 0; c < board[r].length; c++) {
 				if (getTile(r,c) == 0 || getTile(r,c) >= 12) {
 					// Count neighboring roads
+					int team = 0;
 					int closeRoads = 0;
-					if (getTile(r+1,c) >= 1 && getTile(r+1,c) <= 11)
+					if (getTile(r+1,c) >= 1 && getTile(r+1,c) <= 11) {
 						closeRoads++;
-					if (getTile(r-1,c) >= 1 && getTile(r-1,c) <= 11)
+						team = getTeam(r+1,c);
+					}
+					if (getTile(r-1,c) >= 1 && getTile(r-1,c) <= 11) {
 						closeRoads++;
-					if (getTile(r,c+1) >= 1 && getTile(r,c+1) <= 11)
+						if (team==-1) {
+							team = getTeam(r-1,c);
+						}
+						if (getTeam(r-1,c) != team) {
+							team = 0;
+						}
+					}
+					if (getTile(r,c+1) >= 1 && getTile(r,c+1) <= 11) {
 						closeRoads++;
-					if (getTile(r,c-1) >= 1 && getTile(r,c-1) <= 11)
+						if (team == -1) {
+							team = getTeam(r,c+1);
+						}
+						if (getTeam(r,c+1) != team) {
+							team = 0;
+						}
+					}
+					if (getTile(r,c-1) >= 1 && getTile(r,c-1) <= 11) {
 						closeRoads++;
+						if (team == -1) {
+							team = getTeam(r,c-1);
+						}
+						if (getTeam(r,c-1) != team) {
+							team = 0;
+						}
+					}
 					
-					if (closeRoads >= 2) {
-						board[r][c] = 12;
-						
+					if (closeRoads >= 2 && team > 0) {
+						board[r][c] = 11 + team;
 					}
 					else {
 						board[r][c] = 0;
 					}
 				}
-				if (getTile(r,c) == 12 && spawnTimer <= 0) {
-					if (units[r][c] == null) {
-						units[r][c] = new Unit(r, c, 1, this);
+				
+			}
+		}
+	}
+	
+	private void spawnUnits(float timePassed) {
+		spawnTimer -= timePassed;
+		
+		
+		if (spawnTimer <= 0) {
+			for (int r = 0; r < board.length; r++) {
+				for (int c = 0; c < board[r].length; c++) {
+					if (getTile(r,c) >= 12 & getTile(r,c) <= 14) {
+						if (units[r][c] == null) {
+							units[r][c] = new Unit(r, c, getTile(r,c)-11, this);
+						}
 					}
 				}
-				
-				// Update units
+			}
+			
+			spawnTimer = SPAWN_TIME;
+		}
+	}
+	
+	private void updateUnits(float timePassed) {
+		for (int r = 0; r < units.length; r++) {
+			for (int c = 0; c < board[r].length; c++){
 				if (units[r][c] != null) {
+					// Change team first, because unit may move
+					team[r][c] = units[r][c].getTeam();
 					units[r][c].update(timePassed);
 				}
 			}
 		}
-		if (spawnTimer <= 0) {
-			spawnTimer = SPAWN_TIME;
-		}
+	}
+	
+	public void update(float timePassed){
+		buildHouses();
+		spawnUnits(timePassed);
+		updateUnits(timePassed);
 	}
 	
 	public void render(SpriteBatch sb){
@@ -193,6 +259,13 @@ public class Grid {
 			return board[x][y];
 	}
 	
+	public int getTeam(int x, int y) {
+		if (x < 0 || x >= team.length || y < 0 || y >= team[0].length) 
+			return -1;
+		
+		return team[x][y];
+	}
+	
 	public boolean isRoad(int x, int y) {
 		int tile = getTile(x,y);
 		
@@ -215,10 +288,7 @@ public class Grid {
 		return true;
 	}
 	
-	public Graph getRoadGraph() {
-		return roadGraph;
-	}
-	
+
 	public Unit[][] getUnits() {
 		return units;
 	}

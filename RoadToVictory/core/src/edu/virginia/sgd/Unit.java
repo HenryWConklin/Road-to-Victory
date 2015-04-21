@@ -100,16 +100,14 @@ public class Unit {
 	}
 	
 	private int pathWeight(Point p, Point dest) {
-		if (!grid.isRoad(p.x,p.y)) {
+		if (!grid.isRoad(p.x,p.y) && !(p.equals(dest) && grid.getTile(p.x, p.y) == 11 + this.team)) {
 			return Integer.MAX_VALUE;
 		}
 		return Math.abs(p.x-dest.x) + Math.abs(p.y-dest.y);
 	}
 
 	public void render(SpriteBatch sb) {
-		
 		sb.draw(tex, pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
-		
 	}
 	
 	public int getTeam() {
@@ -132,7 +130,7 @@ public class Unit {
 	}
 
 	public void queueMove(Point p) {
-		moveQueue.add(p);	
+		moveQueue.add(p);
 	}
 	
 	public void move(Point p) {
