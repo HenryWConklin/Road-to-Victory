@@ -2,8 +2,6 @@ package edu.virginia.sgd;
 
 import java.awt.Point;
 import java.util.HashSet;
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Buttons;

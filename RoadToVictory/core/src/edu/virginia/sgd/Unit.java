@@ -2,26 +2,20 @@ package edu.virginia.sgd;
 
 import java.awt.Point;
 import java.util.ArrayDeque;
-import java.util.ArrayList;
 import java.util.Queue;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.ai.pfa.Graph;
-import com.badlogic.gdx.ai.pfa.GraphPath;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Unit {
 	
 	private static final float MOVE_TIME = .5f;
 
-	private static Texture tex;
-	private static int nextId;
-	
-	private int id;
+	private static TileSet tileSet;
+	private static int nextID;
 	
 	private int team;
 	private Point pos;
+	private int id;
 	
 	private Queue<Point> moveQueue; 
 	private Grid grid;
@@ -29,8 +23,8 @@ public class Unit {
 	private float moveTimer;
 	
 	static {
-		tex = new Texture("badlogic.jpg");
-		nextId = 0;
+		tileSet = new TileSet("units.png", 150, 150);
+		nextID = 0;
 	}
 
 	public Unit(int x, int y, int team, Grid grid) {
@@ -39,7 +33,7 @@ public class Unit {
 		moveQueue = new ArrayDeque<Point>();
 		this.grid = grid;
 		moveTimer=0;
-		id = nextId++;
+		id = nextID++;
 	}
 	
 	public Unit(Point p, int team, Grid grid) {
@@ -48,7 +42,7 @@ public class Unit {
 		moveQueue = new ArrayDeque<Point>();
 		this.grid = grid;
 		moveTimer=0;
-		id = nextId++;
+		id = nextID++;
 	}
 
 	public void update(float timePassed) {
@@ -107,7 +101,7 @@ public class Unit {
 	}
 
 	public void render(SpriteBatch sb) {
-		sb.draw(tex, pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
+		sb.draw(tileSet.getTexture(getTeam()), pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
 	}
 	
 	public int getTeam() {
