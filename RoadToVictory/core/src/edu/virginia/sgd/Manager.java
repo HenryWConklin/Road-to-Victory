@@ -10,7 +10,7 @@ public class Manager extends Game{
 
 	@Override
 	public void create() {
-		this.setScreen(new GameScreen());
+		this.setScreen(new MainMenu(this));
 		
 	}
 

@@ -333,4 +333,8 @@ public class Grid {
 	public boolean isRoad(Point p) {
 		return isRoad(p.x,p.y);
 	}
+
+	public int getWinner() {
+		return 0;
+	}
 }

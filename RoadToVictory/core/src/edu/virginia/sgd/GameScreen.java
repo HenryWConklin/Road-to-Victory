@@ -1,5 +1,6 @@
 package edu.virginia.sgd;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
@@ -13,6 +14,21 @@ public class GameScreen implements Screen {
 	HumanPlayer p1;
 	AIPlayer p2;
 
+	Game parent;
+
+	public GameScreen(Game parent) {
+		this.parent = parent;
+		
+		batch = new SpriteBatch();
+		
+		// Initialize Grid
+		grid = new Grid(100, 100);
+		
+		//Initialize players
+		p1 = new HumanPlayer(grid, 1);
+		p2 = new AIPlayer(grid,2, .25f);
+		
+	}
 
 	@Override
 	public void render(float delta) {
@@ -39,18 +55,15 @@ public class GameScreen implements Screen {
 		p1.update(timePassed);
 		p2.update(timePassed);
 		grid.update(timePassed);
+		
+		int winTeam = grid.getWinner();
+		if (winTeam != 0) {
+			
+		}
 	}
 
 	@Override
 	public void show() {
-		batch = new SpriteBatch();
-		
-		// Initialize Grid
-		grid = new Grid(100, 100);
-		
-		//Initialize players
-		p1 = new HumanPlayer(grid, 1);
-		p2 = new AIPlayer(grid,2, .25f);
 		
 	}
 

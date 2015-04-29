@@ -1,12 +1,17 @@
 package edu.virginia.sgd;
 
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.Button;
+import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 public class MainMenu implements Screen {
@@ -14,15 +19,47 @@ public class MainMenu implements Screen {
 	private Stage stage;
 	private Table table;
 	
-	public MainMenu() {
+	private final Game parent;
+	
+	public MainMenu(final Game parent) {
+		this.parent = parent;
 		stage = new Stage();
-		stage.setViewport(new ScreenViewport());
+		ScreenViewport viewport = new ScreenViewport();
+		viewport.setUnitsPerPixel(.25f);
+		stage.setViewport(viewport);
 		Gdx.input.setInputProcessor(stage);
 		
 		table = new Table();
+		table.setFillParent(true);
 		stage.addActor(table);
 		
-		table.addActor(new Button());
+		Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
+		
+		
+		Label label = new Label("Road to Victory", skin);
+		table.add(label);
+		table.row();
+		TextButton startButton = new TextButton("Start", skin);
+		startButton.addListener(new ChangeListener() {
+			
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				parent.setScreen(new GameScreen(parent));
+				dispose();
+			}
+		});
+		table.add(startButton);
+		table.row();
+		TextButton quitButton = new TextButton("Quit", skin);
+		quitButton.addListener(new ChangeListener() {
+			
+			@Override
+			public void changed(ChangeEvent event, Actor actor) {
+				Gdx.app.exit();				
+			}
+		});
+		table.add(quitButton);
+		
 	}	
 
 	@Override
