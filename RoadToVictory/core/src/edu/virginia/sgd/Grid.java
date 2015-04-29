@@ -125,7 +125,8 @@ public class Grid {
 			for (int c = 0; c < board[r].length; c++){
 				if (units[r][c] != null) {
 					// Change team first, because unit may move
-					team[r][c] = units[r][c].getTeam();
+					if (isRoad(r,c))
+						team[r][c] = units[r][c].getTeam();
 					units[r][c].update(timePassed);
 				}
 			}

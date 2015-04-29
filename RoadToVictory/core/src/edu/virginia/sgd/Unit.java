@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.Stack;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 public class Unit {
 	
@@ -73,14 +74,22 @@ public class Unit {
 				
 				if (!path.isEmpty()) {
 					Point next = path.peek();
-					if ((grid.isRoad(next) || (path.size()==1 && grid.getTile(next.x, next.y) == 11 + this.team)) 
-							&& grid.getUnits()[next.x][next.y] == null) {
-						grid.getUnits()[next.x][next.y] = this;
-						grid.getUnits()[pos.x][pos.y] = null;
-						this.pos = next;
-						path.pop();
+					if (grid.isRoad(next) || (path.size()==1 && grid.getTile(next.x, next.y) == 11 + this.team)) {
+						if (grid.getUnits()[next.x][next.y] == null) {
+							grid.getUnits()[next.x][next.y] = this;
+							grid.getUnits()[pos.x][pos.y] = null;
+							this.pos = next;
+							path.pop();
+						}
+						else if (grid.getUnits()[next.x][next.y].getTeam() != this.team) {
+							this.kill();
+							grid.getUnits()[pos.x][pos.y] = null;
+							grid.getUnits()[next.x][next.y].kill();
+							grid.getUnits()[next.x][next.y] = null;
+						}
 						moveTimer = MOVE_TIME;
 					}
+					
 				}
 				
 			}
@@ -106,7 +115,7 @@ public class Unit {
 			int[] vec = {1,0};
 			for (int i = 0; i < 4; i++) {
 				Point p = new Point(curr.x + vec[0], curr.y + vec[1]);
-				if (!visited.contains(p) && (grid.isRoad(p) || (p.equals(dest) && grid.getTile(p.x, p.y) == 11 + this.team))) {
+				if (!visited.contains(p) && (grid.isRoad(p) || (p.equals(dest) && grid.getTile(p.x, p.y) >= 12))) {
 					q.add(p);
 					parent.put(p, curr);
 				}
@@ -139,14 +148,15 @@ public class Unit {
 	}
 	
 	private int pathWeight(Point p, Point dest) {
-		if (!grid.isRoad(p.x,p.y) && !(p.equals(dest) && grid.getTile(p.x, p.y) == 11 + this.team)) {
+		if (!grid.isRoad(p.x,p.y) && !(p.equals(dest) && grid.getTile(p.x, p.y) >= 12)) {
 			return Integer.MAX_VALUE;
 		}
 		return Math.abs(p.x-dest.x) + Math.abs(p.y-dest.y);
 	}
 
 	public void render(SpriteBatch sb) {
-		sb.draw(tileSet.getTexture(getTeam()-1), pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
+		TextureRegion tex = tileSet.getTexture(team-1);
+		sb.draw(tex, pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
 	}
 	
 	public int getTeam() {

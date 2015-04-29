@@ -12,8 +12,8 @@ public class TileSet {
 		tex = new Texture(path);
 		
 		
-		int numCols = tex.getWidth()/tileWidth;
-		int numRows = tex.getHeight()/tileHeight;
+		int numRows = tex.getWidth()/tileWidth;
+		int numCols = tex.getHeight()/tileHeight;
 		
 		tiles = new TextureRegion[numRows * numCols];
 		

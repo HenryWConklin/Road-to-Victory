@@ -1,18 +1,17 @@
 package edu.virginia.sgd;
 
 import java.awt.Point;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 
 public class AIPlayer extends Player {
-	
-	// Safe attack threshold, below this ratio of enemy to friendly resources, AI will attack
-	private final float EXP_THRESH = .75f;
-	
-	// Threshold ratio to enemy territory to limit expansion
-	private final float BUILD_THRESH = 2f;
-	// Danger threshold on enemy unit count
-	private final float SPAWN_THRESH = .75f;
-	
 
 	private float moveTimer;
 	private final float MOVE_TIME;	
@@ -22,6 +21,7 @@ public class AIPlayer extends Player {
 	private List<Unit> units;
 
 	private boolean spawnOverride;
+	private Stack<Point> attackPath;
 	
 	public AIPlayer(Grid grid, int team, float time) {
 		super(grid, team);
@@ -30,6 +30,7 @@ public class AIPlayer extends Player {
 		expPoint = null;
 		units = null;
 		spawnOverride = false;
+		attackPath = new Stack<Point>();
 	}
 	
 	// Array of points, represents the 4x4 border around an expansion location
@@ -56,7 +57,7 @@ public class AIPlayer extends Player {
 		if (moveTimer <= 0) {
 			moveTimer = MOVE_TIME;
 			
-			units = getFriendlyUnits();
+			units = getUnitsNotInHouses();
 			
 			// Avoid divide-by-zero, but game should end before this
 			if (units.size() == 0)
@@ -69,7 +70,7 @@ public class AIPlayer extends Player {
 
 			
 			// If more enemies than friendlies, expand
-			if (eUnits >= fUnits) {
+			if (eUnits + 10 >= fUnits || fUnits < 10) {
 				
 				boolean build = eTerr > fTerr || spawnOverride;
 				
@@ -148,9 +149,113 @@ public class AIPlayer extends Player {
 			}
 			// If more friendlies than enemies, attack
 			else {
-				System.out.println("GRRR");
+				// If no current attack path, path to closest enemy
+				if (attackPath.isEmpty()) {
+					int i = (int)(units.size()*Math.random());
+					Point pos = units.get(i).getPos();
+				
+					double minDist = Float.POSITIVE_INFINITY;
+					Point closestEnemy = null;
+					for (int r = 0; r < grid.getRows(); r++) {
+						for (int c = 0; c < grid.getColumns(); c++) {
+							if (grid.getUnits()[r][c] != null && grid.getUnits()[r][c].getTeam() != this.team) {
+								double dist = grid.getUnits()[r][c].getPos().distance(pos);
+								if (dist < minDist) {
+									minDist = dist;
+									closestEnemy = grid.getUnits()[r][c].getPos();
+								}
+							}
+						}
+					}
+						
+					findPath(pos, closestEnemy, false);
+					while (attackPath.size() > 1)
+						attackPath.pop();
+					Point p = pos;
+					if (attackPath.size() != 0)
+						p = attackPath.pop();
+					
+					// If can path without building roads
+					if (p.equals(closestEnemy)) {
+						attackPath.push(closestEnemy);
+					}
+					else {
+						findPath(p, closestEnemy, true);
+					}
+				}
+				
+				
+				if (attackPath.size() == 1 || !grid.build(attackPath.peek(), this.team)) {
+					for(Unit u : units) {
+						u.move(attackPath.peek());
+					}
+					if (attackPath.size() == 1) {
+						attackPath.pop();
+					}
+				}
+				else if (attackPath.size() > 0){
+					attackPath.pop();
+				}
+				
 			}
 		}
+	}
+	
+	private void findPath(Point pos, Point dest, boolean direct) {
+		Queue<Point> q = new ArrayDeque<Point>();
+		Set<Point> visited = new HashSet<Point>();
+		Map<Point,Point> parent = new HashMap<Point,Point>();
+		q.add(pos);
+		
+		while (!q.isEmpty()) {
+			Point curr = q.poll();
+			if (visited.contains(curr)) 
+				continue;
+			visited.add(curr);
+			
+			if (curr.equals(dest))
+				break;
+			
+			int[] vec = {1,0};
+			for (int i = 0; i < 4; i++) {
+				Point p = new Point(curr.x + vec[0], curr.y + vec[1]);
+				if (!visited.contains(p) && (grid.isRoad(p.x,p.y) || direct)) {
+					q.add(p);
+					parent.put(p, curr);
+				}
+				int temp = vec[0];
+				vec[0] = -vec[1];
+				vec[1] = temp;
+			}
+		}
+		Point apDest = dest;
+		// If the parent tree doesn't have the destination, find the closest in the tree
+		if (!parent.containsKey(dest)) {
+			int minWeight = pathWeight(pos, dest);
+			apDest = pos;
+			for (Point p : visited) {
+				int weight = pathWeight(p, dest);
+				if (weight < minWeight) {
+					apDest = p;
+					minWeight = weight;
+				}
+			}
+		}
+		
+		Point curr = apDest;
+		attackPath = new Stack<Point>();
+		while (!curr.equals(pos)) {
+			attackPath.add(curr);
+			curr = parent.get(curr);
+		}
+		
+	}
+	
+	private int pathWeight(Point p, Point dest) {
+		if (!grid.isRoad(p.x,p.y) && !(p.equals(dest) && grid.getTile(p.x, p.y) == 11 + this.team)) {
+			return Integer.MAX_VALUE;
+		}
+		return Math.abs(p.x-dest.x) + Math.abs(p.y-dest.y);
 	}
 	
 	private static final int[][][] EXP_LOCS = {
@@ -275,6 +380,18 @@ public class AIPlayer extends Player {
 			}
 		}
 		return count;
+	}
+	
+	private List<Unit> getUnitsNotInHouses() {
+		ArrayList<Unit> u = new ArrayList<Unit>();
+		for (int r = 0; r < grid.getRows(); r++) {
+			for (int c = 0; c < grid.getColumns(); c++) {
+				if (grid.getUnits()[r][c] != null && grid.getUnits()[r][c].getTeam() == this.team && grid.getTile(r, c) != 11+this.team) {
+					u.add(grid.getUnits()[r][c]);
+				}
+			}
+		}
+		return u;
 	}
 	
 	/*
