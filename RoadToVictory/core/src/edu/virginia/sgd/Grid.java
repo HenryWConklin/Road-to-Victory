@@ -335,6 +335,25 @@ public class Grid {
 	}
 
 	public int getWinner() {
-		return 0;
+		int team = 0;
+		for (int r = 0; r < units.length; r++) {
+			for (int c = 0; c < units[r].length; c++) {
+				if (units[r][c] != null) {
+					if (team != units[r][c].getTeam()) {
+						if (team == 0)
+							team = units[r][c].getTeam();
+						else {
+							team = -1;
+							break;
+						}
+					}
+				}
+			}
+		}
+		return team;
+	}
+	
+	public void spawnP1() {
+		
 	}
 }

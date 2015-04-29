@@ -13,10 +13,12 @@ public class GameScreen implements Screen {
 	Grid grid;
 	HumanPlayer p1;
 	AIPlayer p2;
+	AIPlayer p3;
+	AIPlayer p4;
 
-	Game parent;
+	final Game parent;
 
-	public GameScreen(Game parent) {
+	public GameScreen(final Game parent, boolean p2, boolean p3, boolean p4, int p2Diff, int p3Diff, int p4Diff) {
 		this.parent = parent;
 		
 		batch = new SpriteBatch();
@@ -25,8 +27,13 @@ public class GameScreen implements Screen {
 		grid = new Grid(100, 100);
 		
 		//Initialize players
-		p1 = new HumanPlayer(grid, 1);
-		p2 = new AIPlayer(grid,2, .25f);
+		this.p1 = new HumanPlayer(grid, 1);
+		if (p2)
+			this.p2 = new AIPlayer(grid,2, 2f - p2Diff*.15f);
+		if (p3)
+			this.p3 = new AIPlayer(grid,3, 2f - p3Diff*.15f);
+		if (p4)
+			this.p4 = new AIPlayer(grid,4, 2f - p4Diff*.15f);
 		
 	}
 
@@ -51,14 +58,20 @@ public class GameScreen implements Screen {
 		batch.end();
 	}
 
-	private void update(float timePassed) {
+	private void update(float timePassed) {		
 		p1.update(timePassed);
-		p2.update(timePassed);
+		if (p2 != null)
+			p2.update(timePassed);
+		if (p3 != null)
+			p3.update(timePassed);
+		if (p4 != null)
+			p4.update(timePassed);
 		grid.update(timePassed);
 		
 		int winTeam = grid.getWinner();
-		if (winTeam != 0) {
-			
+		if (winTeam != -1) {
+			parent.setScreen(new WinScreen(parent, winTeam));
+			dispose();
 		}
 	}
 
@@ -93,6 +106,5 @@ public class GameScreen implements Screen {
 
 	@Override
 	public void dispose() {
-		batch.dispose();
 	}
 }

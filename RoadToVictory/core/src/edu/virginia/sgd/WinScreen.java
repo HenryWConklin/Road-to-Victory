@@ -1,6 +1,5 @@
 package edu.virginia.sgd;
 
-
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
@@ -14,14 +13,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-public class MainMenu implements Screen {
+public class WinScreen implements Screen {
 
 	private Stage stage;
+	private Game parent;
 	private Table table;
-	
-	private final Game parent;
-	
-	public MainMenu(final Game parent) {
+
+	public WinScreen(final Game parent, int winTeam) {
 		this.parent = parent;
 		stage = new Stage();
 		ScreenViewport viewport = new ScreenViewport();
@@ -35,32 +33,27 @@ public class MainMenu implements Screen {
 		
 		Skin skin = new Skin(Gdx.files.internal("uiskin.json"));
 		
+		Label winText = new Label("", skin);
+		if (winTeam == 0) {
+			winText.setText("It's a tie!");
+		}
+		else {
+			winText.setText("Player " + winTeam + " wins!");
+		}
 		
-		Label label = new Label("Road to Victory", skin);
-		table.add(label);
+		table.add(winText);
 		table.row();
-		TextButton startButton = new TextButton("Start", skin);
-		startButton.addListener(new ChangeListener() {
+		TextButton exitButton = new TextButton("Back to Main Menu", skin);
+		exitButton.addListener(new ChangeListener() {
 			
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				parent.setScreen(new CreateGameMenu(parent));
-				dispose();
+				parent.setScreen(new MainMenu(parent));
+				dispose();				
 			}
 		});
-		table.add(startButton);
-		table.row();
-		TextButton quitButton = new TextButton("Quit", skin);
-		quitButton.addListener(new ChangeListener() {
-			
-			@Override
-			public void changed(ChangeEvent event, Actor actor) {
-				Gdx.app.exit();				
-			}
-		});
-		table.add(quitButton);
-		
-	}	
+		table.add(exitButton);
+	}
 
 	@Override
 	public void show() {
@@ -71,8 +64,8 @@ public class MainMenu implements Screen {
 	@Override
 	public void render(float delta) {
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		stage.act(delta);
 		stage.draw();
+		stage.act(delta);
 	}
 
 	@Override
@@ -102,6 +95,7 @@ public class MainMenu implements Screen {
 	@Override
 	public void dispose() {
 		stage.dispose();
+
 	}
 
 }
