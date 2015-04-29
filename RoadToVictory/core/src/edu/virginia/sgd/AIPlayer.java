@@ -72,7 +72,7 @@ public class AIPlayer extends Player {
 			// If more enemies than friendlies, expand
 			if (eUnits + 10 >= fUnits || fUnits < 10) {
 				
-				boolean build = eTerr > fTerr || spawnOverride;
+				boolean build = (eTerr > fTerr && eUnits-fUnits < 20) || spawnOverride;
 				
 				if (build) {
 					if (expPoint == null) {
@@ -109,7 +109,7 @@ public class AIPlayer extends Player {
 					else {
 						int nextInd = (claimedInd+1)%EXP_ROADS.length;
 						Point nextPt = new Point(expPoint.x+EXP_ROADS[nextInd][0], expPoint.y+EXP_ROADS[nextInd][1]);
-						if (allBuilt) {
+						if (allBuilt || grid.getTile(nextPt.x, nextPt.y) == -1) {
 							expPoint = null;
 						}
 				

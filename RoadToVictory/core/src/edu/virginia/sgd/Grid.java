@@ -24,19 +24,7 @@ public class Grid {
 		units = new Unit[xdim][ydim];
 		team = new int[xdim][ydim];
 		spawnTimer = SPAWN_TIME;
-		
-		board[0][0] = 1;
-		team[0][0] = 1;
-		units[0][0] = new Unit(0, 0, 1,this);
-		
-		board[20][20] = 1;
-		board[20][21] = 1;
-		board[21][20] = 1;
-		team[20][20] = 2;
-		team[20][21] = 2;
-		team[21][20] = 2;
-		fixTile(20, 20);
-		units[20][20] = new Unit(20,20,2,this);
+
 	}
 	
 	private void buildHouses() {
@@ -97,13 +85,13 @@ public class Grid {
 		if (spawnTimer <= 0) {
 			for (int r = 0; r < board.length; r++) {
 				for (int c = 0; c < board[r].length; c++) {
-					if (getTile(r,c) >= 12 & getTile(r,c) <= 14) {
+					if (getTile(r,c) >= 12 & getTile(r,c) <= 15) {
 						if (units[r][c] != null && units[r][c].getTeam() == getTile(r,c)-11) {
 							int[] vec = {1,0};
 							for (int i = 0; i < 4; i++) {
 								int nR = r+vec[0];
 								int nC = c+vec[1];
-								if (getTile(nR, nC) >= 1 && getTile(nR,nC) <= 11 && units[nR][nC] == null) {
+								if (isRoad(nR,nC) && units[nR][nC] == null) {
 									units[nR][nC] = new Unit(nR, nC, getTile(r,c)-11, this);
 									break;
 								}
@@ -127,7 +115,12 @@ public class Grid {
 					// Change team first, because unit may move
 					if (isRoad(r,c))
 						team[r][c] = units[r][c].getTeam();
-					units[r][c].update(timePassed);
+					if (getTile(r,c) == 0) {
+						units[r][c] = null;
+						team[r][c] = 0;
+					}
+					else
+						units[r][c].update(timePassed);
 				}
 			}
 		}
@@ -193,20 +186,7 @@ public class Grid {
 	public boolean build(int x, int y, int team) {
 		if (getTile(x,y) != 0 && getTile(x,y) < 12) return false;
 		
-		boolean nearOwned = false;
-		int[] vec = {1,0};
-		for (int i = 0; i < 4; i++) {
-			if (getTeam(x+vec[0], y+vec[1]) == team) {
-				nearOwned = true;
-				break;
-			}
-			int temp = vec[0];
-			vec[0] = -vec[1];
-			vec[1] = temp;
-		}
 		
-		if (!nearOwned)
-			return false;
 		
 		board[x][y] = 1;
 		
@@ -354,6 +334,82 @@ public class Grid {
 	}
 	
 	public void spawnP1() {
+		for (int i = 1; i <=4; i++) {
+			for (int j = 1; j <= 4; j++) {
+				board[i][j] = 1;
+				team[i][j] = 1;
+			}
+		}
 		
+		for (int i = 2; i <= 3; i++) {
+			for (int j = 2; j <= 3; j++) {
+				board[i][j] = 12;
+				fixTile(i+1,j);
+				fixTile(i-1,j);
+				fixTile(i,j+1);
+				fixTile(i,j-1);
+				units[i][j] = new Unit(i, j, 1, this);
+			}
+		}
+	}
+	
+	public void spawnP2() {
+		for (int i = board.length-4; i <= board.length-1; i++) {
+			for (int j = board[i].length-4; j <= board[i].length-1; j++) {
+				board[i][j] = 1;
+				team[i][j] = 2;
+			}
+		}
+		
+		for (int i = board.length-3; i <= board.length-2; i++) {
+			for (int j = board.length-3; j <= board.length-2; j++) {
+				board[i][j] = 13;
+				fixTile(i+1,j);
+				fixTile(i-1,j);
+				fixTile(i,j+1);
+				fixTile(i,j-1);
+				units[i][j] = new Unit(i, j, 2, this);
+			}
+		}
+	}
+	
+	public void spawnP3() {
+		for (int i = 1; i <=4; i++) {
+			for (int j = board.length-4; j <= board.length-1; j++) {
+				board[i][j] = 1;
+				team[i][j] = 3;
+			}
+		}
+		
+		for (int i = 2; i <= 3; i++) {
+			for (int j = board.length-3; j <= board.length-2; j++) {
+				board[i][j] = 14;
+				fixTile(i+1,j);
+				fixTile(i-1,j);
+				fixTile(i,j+1);
+				fixTile(i,j-1);
+				units[i][j] = new Unit(i, j, 3, this);
+			}
+		}
+	}
+	
+	public void spawnP4() {
+		for (int i = board.length-4; i <= board.length-1; i++) {
+			for (int j = 1; j <= 4; j++) {
+				board[i][j] = 1;
+				team[i][j] = 4;
+			}
+		}
+		
+		for (int i = board.length-3; i <= board.length-2; i++) {
+			for (int j = 2; j <= 3; j++) {
+				board[i][j] = 15;
+				fixTile(i+1,j);
+				fixTile(i-1,j);
+				fixTile(i,j+1);
+				fixTile(i,j-1);
+				units[i][j] = new Unit(i, j, 4, this);
+			}
+		}
 	}
 }

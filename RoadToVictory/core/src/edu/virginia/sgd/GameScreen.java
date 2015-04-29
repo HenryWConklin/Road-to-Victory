@@ -24,16 +24,24 @@ public class GameScreen implements Screen {
 		batch = new SpriteBatch();
 		
 		// Initialize Grid
-		grid = new Grid(100, 100);
+		grid = new Grid(40, 40);
 		
 		//Initialize players
 		this.p1 = new HumanPlayer(grid, 1);
-		if (p2)
+		grid.spawnP1();
+		
+		if (p2) {
 			this.p2 = new AIPlayer(grid,2, 2f - p2Diff*.15f);
-		if (p3)
+			grid.spawnP2();
+		}
+		if (p3){
 			this.p3 = new AIPlayer(grid,3, 2f - p3Diff*.15f);
-		if (p4)
+			grid.spawnP3();
+		}
+		if (p4){
 			this.p4 = new AIPlayer(grid,4, 2f - p4Diff*.15f);
+			grid.spawnP4();
+		}
 		
 	}
 
