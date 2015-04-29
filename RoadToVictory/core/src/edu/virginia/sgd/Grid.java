@@ -52,7 +52,7 @@ public class Grid {
 					}
 					if (getTile(r-1,c) >= 1 && getTile(r-1,c) <= 11) {
 						closeRoads++;
-						if (team==-1) {
+						if (team==-1 || team == 0) {
 							team = getTeam(r-1,c);
 						}
 						if (getTeam(r-1,c) != team) {
@@ -61,7 +61,7 @@ public class Grid {
 					}
 					if (getTile(r,c+1) >= 1 && getTile(r,c+1) <= 11) {
 						closeRoads++;
-						if (team == -1) {
+						if (team == -1 || team == 0) {
 							team = getTeam(r,c+1);
 						}
 						if (getTeam(r,c+1) != team) {
@@ -70,7 +70,7 @@ public class Grid {
 					}
 					if (getTile(r,c-1) >= 1 && getTile(r,c-1) <= 11) {
 						closeRoads++;
-						if (team == -1) {
+						if (team == -1 || team == 0) {
 							team = getTeam(r,c-1);
 						}
 						if (getTeam(r,c-1) != team) {

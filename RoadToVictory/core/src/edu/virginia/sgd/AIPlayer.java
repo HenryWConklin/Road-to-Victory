@@ -20,6 +20,8 @@ public class AIPlayer extends Player {
 	// Corner of current expansion target
 	private Point expPoint;
 	private List<Unit> units;
+
+	private boolean spawnOverride;
 	
 	public AIPlayer(Grid grid, int team, float time) {
 		super(grid, team);
@@ -27,6 +29,7 @@ public class AIPlayer extends Player {
 		moveTimer = MOVE_TIME;	
 		expPoint = null;
 		units = null;
+		spawnOverride = false;
 	}
 	
 	// Array of points, represents the 4x4 border around an expansion location
@@ -63,16 +66,12 @@ public class AIPlayer extends Player {
 			int eUnits = enemyUnits();
 			int fTerr = friendlyTerritory();
 			int fUnits = units.size();
-			
-			float decRatio = (float)(eTerr+eUnits)/(fTerr+fUnits);
+
 			
 			// If more enemies than friendlies, expand
-			if (decRatio > EXP_THRESH) {
+			if (eUnits >= fUnits) {
 				
-				float uRatio = (float)eUnits/fUnits;
-				float tRatio = (float)eTerr/fTerr;
-				
-				boolean build = uRatio > SPAWN_THRESH && tRatio < BUILD_THRESH;
+				boolean build = eTerr > fTerr || spawnOverride;
 				
 				if (build) {
 					if (expPoint == null) {
@@ -124,6 +123,8 @@ public class AIPlayer extends Player {
 						}
 					}
 					
+					spawnOverride = false;
+					
 				}
 				// Else build units
 				else {
@@ -135,6 +136,13 @@ public class AIPlayer extends Player {
 						// If the house isn't currently filled, move a unit to it
 						if (grid.getUnits()[b.x][b.y] == null)
 							findClosestUnit(b).move(b);
+						// Assume most houses are filled and do something else
+						else 
+							spawnOverride = true;
+					}
+					// If no houses, don't try to spawn units
+					else {
+						spawnOverride = true;
 					}
 				}
 			}

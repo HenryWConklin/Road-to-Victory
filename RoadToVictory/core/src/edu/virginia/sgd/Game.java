@@ -26,7 +26,7 @@ public class Game extends ApplicationAdapter {
 		
 		//Initialize players
 		p1 = new HumanPlayer(grid, 1);
-		p2 = new AIPlayer(grid,2, 2);
+		p2 = new AIPlayer(grid,2, 1);
 	}
 
 	@Override
