@@ -2,7 +2,12 @@ package edu.virginia.sgd;
 
 import java.awt.Point;
 import java.util.ArrayDeque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.Stack;
 
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
@@ -17,10 +22,13 @@ public class Unit {
 	private Point pos;
 	private int id;
 	
+	private Stack<Point> path;
 	private Queue<Point> moveQueue; 
 	private Grid grid;
 	
 	private float moveTimer;
+
+	private boolean dead;
 	
 	static {
 		tileSet = new TileSet("units.png", 150, 150);
@@ -34,6 +42,8 @@ public class Unit {
 		this.grid = grid;
 		moveTimer=0;
 		id = nextID++;
+		dead = false;
+		path = new Stack<Point>();
 	}
 	
 	public Unit(Point p, int team, Grid grid) {
@@ -43,52 +53,87 @@ public class Unit {
 		this.grid = grid;
 		moveTimer=0;
 		id = nextID++;
+		dead = false;
+		path = new Stack<Point>();
 	}
 
 	public void update(float timePassed) {
-		// If at destination 
-		if (pos.equals(moveQueue.peek())) {
-			moveQueue.poll();			
+		if (!dead) {
+			
+			moveTimer -= timePassed;
+			
+			if (moveTimer <= 0) {
+				
+				
+				if (path.isEmpty()){
+					if (!moveQueue.isEmpty()) {
+						findPath(moveQueue.poll());
+					}
+				}
+				
+				if (!path.isEmpty()) {
+					Point next = path.peek();
+					if ((grid.isRoad(next) || (path.size()==1 && grid.getTile(next.x, next.y) == 11 + this.team)) 
+							&& grid.getUnits()[next.x][next.y] == null) {
+						grid.getUnits()[next.x][next.y] = this;
+						grid.getUnits()[pos.x][pos.y] = null;
+						this.pos = next;
+						path.pop();
+						moveTimer = MOVE_TIME;
+					}
+				}
+				
+			}
 		}
 		
-		// Timer to delay movement
-		moveTimer -= timePassed;
-		if (moveTimer < 0) {
-			moveTimer = 0;
-		}
+	}
+	
+	private void findPath(Point dest) {
+		Queue<Point> q = new ArrayDeque<Point>();
+		Set<Point> visited = new HashSet<Point>();
+		Map<Point,Point> parent = new HashMap<Point,Point>();
+		q.add(pos);
 		
-		if (moveTimer <= 0 && moveQueue.peek()!=null) {
-			Point dest = moveQueue.peek();
-			int currWeight = pathWeight(pos, dest);
+		while (!q.isEmpty()) {
+			Point curr = q.poll();
+			if (visited.contains(curr)) 
+				continue;
+			visited.add(curr);
 			
-			int minWeight=currWeight;
-			Point minPoint = pos;
+			if (curr.equals(dest))
+				break;
 			
-			// Iterate over four directions
-			Point dir = new Point(0,1);
-			for (int i = 1; i <=4; i++) {
-				Point curr = new Point(pos.x + dir.x, pos.y + dir.y);
-				int weight = pathWeight(curr, dest);
+			int[] vec = {1,0};
+			for (int i = 0; i < 4; i++) {
+				Point p = new Point(curr.x + vec[0], curr.y + vec[1]);
+				if (!visited.contains(p) && (grid.isRoad(p) || (p.equals(dest) && grid.getTile(p.x, p.y) == 11 + this.team))) {
+					q.add(p);
+					parent.put(p, curr);
+				}
+				int temp = vec[0];
+				vec[0] = -vec[1];
+				vec[1] = temp;
+			}
+		}
+		Point apDest = dest;
+		// If the parent tree doesn't have the destination, find the closest in the tree
+		if (!parent.containsKey(dest)) {
+			int minWeight = pathWeight(pos, dest);
+			apDest = pos;
+			for (Point p : visited) {
+				int weight = pathWeight(p, dest);
 				if (weight < minWeight) {
+					apDest = p;
 					minWeight = weight;
-					minPoint = curr;
-				}
-				dir = new Point(dir.y, -dir.x); 
-			}
-			
-			// If a point closer to the destination was found
-			if (minPoint!=pos) {
-				// If the destination point is unoccupied
-				Unit[][] units = grid.getUnits();
-				if (units[minPoint.x][minPoint.y] == null) {
-					// Move to point
-					units[minPoint.x][minPoint.y] = this;
-					units[pos.x][pos.y] = null;
-					pos = minPoint;
-					moveTimer = MOVE_TIME;
 				}
 			}
-			
+		}
+		
+		Point curr = apDest;
+		path = new Stack<Point>();
+		while (!curr.equals(pos)) {
+			path.add(curr);
+			curr = parent.get(curr);
 		}
 		
 	}
@@ -101,11 +146,19 @@ public class Unit {
 	}
 
 	public void render(SpriteBatch sb) {
-		sb.draw(tileSet.getTexture(getTeam()), pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
+		sb.draw(tileSet.getTexture(getTeam()-1), pos.x * Grid.TILE_DIMENSION, pos.y * Grid.TILE_DIMENSION, Grid.TILE_DIMENSION, Grid.TILE_DIMENSION);
 	}
 	
 	public int getTeam() {
 		return team;
+	}
+	
+	public Point getPos() {
+		return pos;
+	}
+	
+	public void kill() {
+		dead = true;
 	}
 	
 	@Override
@@ -129,6 +182,7 @@ public class Unit {
 	
 	public void move(Point p) {
 		moveQueue.clear();
+		path.clear();
 		moveQueue.add(p);
 	}
 

@@ -13,19 +13,20 @@ public class Game extends ApplicationAdapter {
 	Grid grid;
 	long lastTime;
 	HumanPlayer p1;
+	AIPlayer p2;
 
 
 	@Override
 	public void create() {
 		batch = new SpriteBatch();
-		img = new Texture("badlogic.jpg");
 		lastTime = TimeUtils.millis();
 		
 		// Initialize Grid
-		grid = new Grid(20, 20, img);
+		grid = new Grid(100, 100);
 		
 		//Initialize players
 		p1 = new HumanPlayer(grid, 1);
+		p2 = new AIPlayer(grid,2, 2);
 	}
 
 	@Override
@@ -53,6 +54,7 @@ public class Game extends ApplicationAdapter {
 
 	private void update(float timePassed) {
 		p1.update(timePassed);
+		p2.update(timePassed);
 		grid.update(timePassed);
 	}
 }

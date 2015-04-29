@@ -2,7 +2,6 @@ package edu.virginia.sgd;
 
 import java.awt.Point;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Grid {
@@ -17,7 +16,7 @@ public class Grid {
 	
 	private float spawnTimer;
 	
-	public Grid(int xdim, int ydim, Texture tex){
+	public Grid(int xdim, int ydim){
 		if (xdim == 0 || ydim == 0)
 			throw new IllegalArgumentException("Grid size cannot be 0.");
 		this.board = new int[xdim][ydim];
@@ -26,21 +25,18 @@ public class Grid {
 		team = new int[xdim][ydim];
 		spawnTimer = SPAWN_TIME;
 		
-		for (int r = 0; r < 5; r++) {
-			for (int c = 0; c < 5; c++) {
-				team[r][c]=1;
-			}
-		}
-		for (int r = 5; r < 10; r++) {
-			for (int c = 0; c < 5; c++) {
-				team[r][c]=2;
-			}
-		}
-		for (int r = 10; r < 15; r++) {
-			for (int c = 0; c < 5; c++) {
-				team[r][c]=4;
-			}
-		}
+		board[0][0] = 1;
+		team[0][0] = 1;
+		units[0][0] = new Unit(0, 0, 1,this);
+		
+		board[20][20] = 1;
+		board[20][21] = 1;
+		board[21][20] = 1;
+		team[20][20] = 2;
+		team[20][21] = 2;
+		team[21][20] = 2;
+		fixTile(20, 20);
+		units[20][20] = new Unit(20,20,2,this);
 	}
 	
 	private void buildHouses() {
@@ -102,8 +98,19 @@ public class Grid {
 			for (int r = 0; r < board.length; r++) {
 				for (int c = 0; c < board[r].length; c++) {
 					if (getTile(r,c) >= 12 & getTile(r,c) <= 14) {
-						if (units[r][c] == null) {
-							units[r][c] = new Unit(r, c, getTile(r,c)-11, this);
+						if (units[r][c] != null && units[r][c].getTeam() == getTile(r,c)-11) {
+							int[] vec = {1,0};
+							for (int i = 0; i < 4; i++) {
+								int nR = r+vec[0];
+								int nC = c+vec[1];
+								if (getTile(nR, nC) >= 1 && getTile(nR,nC) <= 11 && units[nR][nC] == null) {
+									units[nR][nC] = new Unit(nR, nC, getTile(r,c)-11, this);
+									break;
+								}
+								int temp = vec[0];
+								vec[0] = -vec[1];
+								vec[1] = temp;
+							}
 						}
 					}
 				}
@@ -149,14 +156,24 @@ public class Grid {
 		}
 	}
 	
-	// Returns width in world coordinates
+	/** Returns width in world coordinates */
 	public int getWidth() {
 			return board.length * TILE_DIMENSION;
 	}
 	
-	// Returns height in world coordinates
+	/** Returns height in world coordinates */
 	public int getHeight() {
 		return board[0].length * TILE_DIMENSION;
+	}
+	
+	/** Returns the number of rows in the grid arrays */
+	public int getRows() {
+		return board.length;
+	}
+	
+	/** Returns the number of columns in the grid arrays */
+	public int getColumns() {
+		return board[0].length;
 	}
 	
 	
@@ -168,12 +185,28 @@ public class Grid {
 		return new Point(gridX,gridY);
 	}
 	
-	public boolean build(Point p) {
-		return build(p.x, p.y);
+	public boolean build(Point p, int team) {
+		return build(p.x, p.y, team);
 	}
 	
-	public boolean build(int x, int y) {
+	public boolean build(int x, int y, int team) {
 		if (getTile(x,y) != 0 && getTile(x,y) < 12) return false;
+		
+		boolean nearOwned = false;
+		int[] vec = {1,0};
+		for (int i = 0; i < 4; i++) {
+			if (getTeam(x+vec[0], y+vec[1]) == team) {
+				nearOwned = true;
+				break;
+			}
+			int temp = vec[0];
+			vec[0] = -vec[1];
+			vec[1] = temp;
+		}
+		
+		if (!nearOwned)
+			return false;
+		
 		board[x][y] = 1;
 		
 		fixTile(x,y);
@@ -272,13 +305,16 @@ public class Grid {
 		return tile > 0 && tile < 12;
 	}
 	
-	public boolean destroy(Point p) {
-		return destroy(p.x,p.y);
+	public boolean destroy(Point p, int team) {
+		return destroy(p.x,p.y, team);
 	}
 	
-	public boolean destroy(int x, int y) { 
+	public boolean destroy(int x, int y, int team) { 
 		if (getTile(x,y) == -1)
 			return false;
+		
+		if (this.team[x][y] == 0 || this.team[x][y] == team)
+			this.team[x][y] = 0;
 		
 		board[x][y] = 0;
 		fixTile(x-1,y,false);
@@ -291,5 +327,9 @@ public class Grid {
 
 	public Unit[][] getUnits() {
 		return units;
+	}
+
+	public boolean isRoad(Point p) {
+		return isRoad(p.x,p.y);
 	}
 }

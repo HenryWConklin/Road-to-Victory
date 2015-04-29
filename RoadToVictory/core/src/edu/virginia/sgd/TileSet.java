@@ -9,7 +9,7 @@ public class TileSet {
 	private Texture tex;
 	
 	public TileSet(String path, int tileWidth, int tileHeight) {
-		tex = new Texture("tileset.png");
+		tex = new Texture(path);
 		
 		
 		int numCols = tex.getWidth()/tileWidth;

@@ -103,7 +103,7 @@ public class HumanPlayer extends Player {
 				buttonPressed = 1;
 				
 				if (state == STATE_BUILD) {
-					grid.build(grid.worldToGridCoords(mouseWorld));
+					grid.build(grid.worldToGridCoords(mouseWorld), team);
 					if (!(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT))) {
 						state = STATE_SELECT;
 					}
@@ -119,7 +119,7 @@ public class HumanPlayer extends Player {
 					moveSelection(grid.worldToGridCoords(mouseWorld));
 				}
 				else if (state == STATE_BUILD) {
-					grid.destroy(grid.worldToGridCoords(mouseWorld));
+					grid.destroy(grid.worldToGridCoords(mouseWorld), this.team);
 					if (!(Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT))) {
 						state = STATE_SELECT;
 					}
